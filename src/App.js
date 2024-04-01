@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { Navbar, Nav, NavDropdown, Button } from "react-bootstrap";
 import axios from "axios";
+import { Navbar, Nav, NavDropdown } from "react-bootstrap";
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './css/reset.css';
 import './css/fonts.css';
@@ -16,32 +17,43 @@ import Page404 from "./pages/Page404";
 import AuthorInfo from "./pages/AuthorInfo";
 import WritersCall from "./pages/WritersCall";
 
+
 function App() {
   //useNavigate() - 함수이므로 변수에 담아서 선언을 일반적으로 함.
   let navigate = useNavigate();
-  let [pic] = useState(data);
+  let [pic, setPic] = useState(data);
   //console.log(pic)
   let [showButton, setShowButton] = useState(true)
 
-
-  // sub1/:id 경로가 클릭되면 첫번재 페이지를 보여주는 navigate 함수 선언
+  // sub1/:id 경로가 클릭되면 첫번째 페이지를 보여주는 navigate 함수 선언
   const goToSub1 = (id) => {
     navigate(`/sub1/${id}`)
   }
 
   //axios로 데이터 요청
-  const fetch = () => {
+  const fetchData = () => {
     axios.get("https://raw.githubusercontent.com/HeoSsaM/shop2/main/data2.json")
       .then((result) => {
-        //console.log(result);
+        //console.log(result.data);
+        let copy = [...pic, ...result.data]; //pic이 가지고 있는 data.js와 서버에서 받은 data2.json의 데이터를 각각 복사해서 copy라는 변수에 저장
+        //console.log("copy:",copy);
+        setPic(copy)
+
+        if (result.data.length == 0) {
+          setShowButton(false);
+        }
+      })
+      .catch(() => {
+        console.log("실패")
       })
   }
 
-
-  //상품 더보기 버튼을 클릭하면 실행되는 함수 
+  //상품더보기 버튼을 클릭하면 실행되는 함수
   const btnDataClick = () => {
-
+    fetchData();
+    setShowButton(false); //버튼이 클릭되면 비활성화
   }
+
   return (
     <div className="wrap">
       <div className="nav-wrap">
@@ -52,22 +64,21 @@ function App() {
             </Navbar.Brand>
             <Nav className="me-auto gnb">
               <Nav.Link onClick={() => goToSub1(0)}>작품보기</Nav.Link>
-
+              {/* sub2 서브메뉴 */}
               <NavDropdown title="작가별" id="basic-nav-dropdown">
                 <NavDropdown.Item
                   onClick={() => navigate("/sub2/sub2-1")}
-                  className="nav-submenu"
-                >
+                  className="nav-submenu" >
                   작가소개
                 </NavDropdown.Item>
                 <NavDropdown.Item
                   onClick={() => navigate("/sub2/sub2-2")}
-                  className="nav-submenu"
-                >
+                  className="nav-submenu">
                   작가 공모
                 </NavDropdown.Item>
               </NavDropdown>
-              <Nav.Link href="/sub3">이벤트페이지</Nav.Link>
+
+              <Nav.Link href="/sub3">이벤트</Nav.Link>
             </Nav>
           </div>
         </Navbar>
@@ -84,16 +95,17 @@ function App() {
         </Route>
         <Route path="/sub3" element={<Sub3 />} />
         <Route path="*" element={<Page404 />} />
+      </Routes>
 
-      </Routes >
-
-      {/* 상품더보기버튼 */}
+      {/* 상품더보기 버튼 */}
       {
+        //버튼이 활성화되었을 때만 클릭 가능하도록 설정
         showButton && (
-          <button className="btn-data" onClick={btnDataClick} disabled={!showButton}>상품더보기</button> //버튼이 활성화 되었을때 만 클릭이 가능하도록 설정
+          <button className="btn-data" onClick={btnDataClick} disabled={!showButton}> 상품더보기 </button>
         )
       }
-    </div >
+
+    </div>
   );
 }
 
